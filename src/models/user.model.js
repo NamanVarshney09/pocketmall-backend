@@ -28,6 +28,9 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: [true, "Password is required"],
         },
+        avatar: {
+            type: String, // cloudinary url
+        },
         refreshToken: {
             type: String,
         },
