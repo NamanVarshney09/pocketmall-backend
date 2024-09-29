@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
-import brcypt from "brcypt";
+import brcypt from "bcrypt";
 
 const userSchema = new mongoose.Schema(
     {
