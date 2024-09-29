@@ -24,7 +24,6 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
 const registerUser = asyncHandler(async (req, res) => {
     const { fullName, email, username, password } = req.body;
-
     if (
         [fullName, email, username, password].some(
             (field) => field?.trim() === ""
@@ -32,7 +31,7 @@ const registerUser = asyncHandler(async (req, res) => {
     ) {
         throw new ApiError(400, "All fields are required");
     }
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }],
     });
 
@@ -40,7 +39,9 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with email or username already exists");
     }
 
+
     const avatarLocalPath = req.files?.avatar[0]?.path;
+
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar not provided");
     }
@@ -83,7 +84,7 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Username or Email is required !");
     }
 
-    const user = User.findOne({ $or: [{ username }, { email }] });
+    const user = await User.findOne({ $or: [{ username }, { email }] });
     if (!user) {
         throw new ApiError(404, "User doesn't exist");
     }
@@ -109,7 +110,7 @@ const loginUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken.options)
+        .cookie("refreshToken", refreshToken, options)
         .json(
             new ApiResponse(
                 200,
