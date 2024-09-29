@@ -16,10 +16,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
 
         return { accessToken, refreshToken };
     } catch (error) {
-        throw new ApiError(
-            500,
-            "Something went wrong while generating tokens."
-        );
+        throw new ApiError(500, "Internal error : Token generation");
     }
 };
 
@@ -173,24 +170,24 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "Refresh token expired");
         }
 
-        const { accessToken, newRefreshToken } =
+        const { accessToken, refreshToken } =
             await generateAccessAndRefreshTokens(user._id);
 
         const options = {
             httpOnly: true,
-            secure: true,
+            secure: true, // only modifiable through Server(not from frontend)
         };
 
         return res
             .status(200)
             .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", newRefreshToken, options)
+            .cookie("refreshToken", refreshToken, options)
             .json(
                 new ApiResponse(
                     200,
                     {
                         accessToken,
-                        refreshToken: newRefreshToken,
+                        refreshToken,
                     },
                     "Access token refreshed"
                 )
@@ -203,8 +200,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 const updateUserPassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body;
 
-    const user = User.findById(req.user?._id);
-    const isPasswordValid = user.isPasswordCorrect(oldPassword);
+    const user = await User.findById(req.user?._id);
+
+    const isPasswordValid = await user.isPasswordCorrect(oldPassword);
+
     if (!isPasswordValid) {
         throw new ApiError(400, "Invalid old password");
     }
@@ -214,11 +213,13 @@ const updateUserPassword = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200, {}, "Password updated successfully"));
+        .json(new ApiResponse(200, "Password updated successfully"));
 });
 
 const fetchCurrentUser = asyncHandler(async (req, res) => {
-    return res.status(200).json(200, req.user, "Current user fetched");
+    return res
+        .status(200)
+        .json(new ApiResponse(200, req.user, "Current user fetched"));
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
