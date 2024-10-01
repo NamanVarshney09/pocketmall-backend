@@ -2,8 +2,8 @@ import { Router } from "express";
 import {
     addProduct,
     updateProductDetails,
-    getAllProducts,
-    getProductByID,
+    fetchAllProducts,
+    fetchProductByID,
     deleteProduct,
 } from "../controllers/product.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -11,21 +11,12 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.route("/").get(verifyJWT, getAllProducts);
-router.route("/:id").get(verifyJWT, getProductByID);
+router.route("/").get(verifyJWT, fetchAllProducts);
+router.route("/:id").get(verifyJWT, fetchProductByID);
 
-router.route("/add").post(
-    verifyJWT,
-    upload.fields([
-        {
-            name: "productImage",
-            maxCount: 1,
-        },
-    ]),
-    addProduct
-);
+router.route("/add").post(upload.single("productImage"), addProduct);
 
-router.route("/update/:id").patch(verifyJWT, updateProductDetails);
-router.route("/delete/:id").delete(verifyJWT, deleteProduct);
+router.route("/update/:id").patch(updateProductDetails);
+router.route("/delete/:id").delete(deleteProduct);
 
 export default router;
