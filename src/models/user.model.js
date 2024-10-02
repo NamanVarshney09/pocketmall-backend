@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema(
             unique: true,
             lowercase: true,
             trim: true,
+            match: [/.+\@.+\..+/, "Invalid email address"],
         },
         fullName: {
             type: String,
@@ -35,9 +36,7 @@ const userSchema = new mongoose.Schema(
             type: String,
         },
     },
-    {
-        timestamps: true,
-    }
+    { timestamps: true }
 );
 
 userSchema.pre("save", async function (next) {
